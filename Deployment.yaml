@@ -1,0 +1,66 @@
+# This is an example deployment file
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-provisioner
+  labels:
+    app.kubernetes.io/name: kubernetes-event-job
+    app.kubernetes.io/version: "0.1.0"
+    app.kubernetes.io/component: provisioning
+    app.kubernetes.io/part-of: goci
+    app.kubernetes.io/managed-by: goci
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: job-provisioner
+      release: kubernetes-event-job
+  template:
+    metadata:
+      labels:
+        app: job-provisioner
+        release: kubernetes-event-job
+    spec:
+      containers:
+      - name: app
+        image: localhost:5000/kubernetes-event-job:latest
+        envFrom:
+        - configMapRef:
+            name: job-provisioner-env
+        - secretRef:
+            name: job-provisioner-env
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: job-provisioner-env
+data:
+  DOCKER_REGISTRY: localhost:5000
+  KUBERNETES_JOB_SCOPE: provisioning
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: job-provisioner-env
+data:
+  AQMP_USERNAME: dGVzdA==
+  AQMP_PASSWORD: dGVzdA==
+  AMQP_HOST: cmFiYml0bXEuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbA==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-job-provisioner-configs
+data:
+  test-queue-1: |
+    image: 'test'
+    imageVersion: '0.1.0'
+    jobName: my-processor
+  
