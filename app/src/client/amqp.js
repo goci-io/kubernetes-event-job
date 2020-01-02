@@ -33,12 +33,11 @@ class AmqpClient {
 
     return new Promise((resolve, reject) => {
       amqp.connect(`amqp://${this.host}?heartbeat=${this.heartbeatInSeconds}`).then(connection => {
-        process.once('SIGINT', () => connection && connection.close());
+        process.once('SIGINT', () => this.stopChannel());
         this._connection = connection;
 
         connection.once('error', err => {
-          this._connection = null;
-          this._lastConnectionError = err;
+          this.stopChannel(error);
 
           logger.warn('Connection error with broker. Attempting reconnect', err);
           this.reconnect();
@@ -51,10 +50,7 @@ class AmqpClient {
         });
     
         connection.createChannel().then(channel => {
-          this.channel = channel;
-          this.retryFailures = 0;
-          this.connectionBackoff = 10;
-          this._lastConnectionError = null;
+          this.startOnChannel(channel);
           resolve(this);
         }).catch(reject);
       })
@@ -62,9 +58,32 @@ class AmqpClient {
     });
   }
 
-  stop() {
+  /**
+   * Resets the client to listen for messages on the provided channel
+   * 
+   * @param {Channel} channel 
+   */
+  startOnChannel(channel) {
+    this.channel = channel;
+    this.retryFailures = 0;
+    this.connectionBackoff = 10;
+    this._lastConnectionError = null;
+  }
+
+  /**
+   * Stops the connection to allow new connections and sets the last error occurred if provided
+   * 
+   * @param {Error|null} withError 
+   */
+  stopChannel(withError) {
     if (this._connection) {
       this._connection.close();
+      this._connection = null;
+      this.channel = null;
+      
+      if (withError) {
+        this._lastConnectionError = withError;
+      }
     }
   }
 
