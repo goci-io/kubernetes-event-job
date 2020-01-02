@@ -1,0 +1,38 @@
+{
+  "name": "kubernetes-event-job",
+  "version": "0.1.0",
+  "description": "Node.js application to deploy kubernetes jobs based on AMQP messages",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index",
+    "test": "node_modules/.bin/jasmine --config=spec/support/jasmine.json",
+    "coverage": "nyc -r text -n \"src/**/*.js\" npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goci-io/kubernetes-event-job.git"
+  },
+  "keywords": [
+    "kubernetes",
+    "job",
+    "amqp"
+  ],
+  "author": "goci.io",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/goci-io/kubernetes-event-job/issues"
+  },
+  "homepage": "https://github.com/goci-io/kubernetes-event-job#readme",
+  "dependencies": {
+    "@kubernetes/client-node": "^0.11.0",
+    "amqplib": "^0.5.5",
+    "uuidv4": "^5.0.1",
+    "winston": "^3.2.1",
+    "yaml": "^1.7.2"
+  },
+  "devDependencies": {
+    "jasmine": "^3.5.0",
+    "nyc": "^14.1.1",
+    "testcontainers": "^2.2.0"
+  }
+}

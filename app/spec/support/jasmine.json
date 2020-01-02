@@ -1,0 +1,10 @@
+{
+    "spec_dir": "spec",
+    "spec_files": [
+        "**/*[sS]pec.js",
+        "!**/*nospec.js"
+    ],
+    "failFast": true,
+    "oneFailurePerSpec": true,
+    "random": true
+}

@@ -1,0 +1,17 @@
+{
+    "configMap": {
+        "config": {
+            "deploy": {
+                "body": {
+                    "data": {
+                        "test-queue-1": "jobName: testName\ninterval: 1\nimage: test-runner\ntimeout: 900",
+                        "test-queue-2": "jobName: oneAtATime\ninterval: 1\nimage: test-runner\nparallelism: 10"
+                    }
+                }
+            }
+        }
+    },
+    "secret": {
+        
+    }
+}
