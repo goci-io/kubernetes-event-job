@@ -13,7 +13,3 @@ build:
 release:
 	docker tag kubernetes-event-job $(DOCKER_REGISTRY)/kubernetes-event-job:$(VERSION)
 	docker push $(DOCKER_REGISTRY)/kubernetes-event-job:$(VERSION)
-
-deploy:
-
-build-and-deploy: build release deploy
