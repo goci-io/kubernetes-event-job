@@ -47,7 +47,7 @@ The following environment variables can be set to configure the app behaviour:
 
 | Name | Description | Default |
 |----------------|-------------------------------------------------|--------------------|
-| jobName | Unique name of the job (prefix) | - |
+| jobName | Unique name of the job (prefix) | - (Required) |
 | parallelism | Number or `unlimited` | 10 |
 | timeout | Number in seconds for the job before timing out | 3600 |
 | environment | Object with addtitional environment variables for the job | `{}` |
