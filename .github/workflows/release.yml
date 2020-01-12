@@ -18,9 +18,3 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Release
         run: make release GITHUB_REF=${{ github.ref }}
-      - name: Docker Hub Description
-        uses: peter-evans/dockerhub-description@v2.1.0
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          DOCKERHUB_REPOSITORY: gocidocker/kubernetes-event-job
