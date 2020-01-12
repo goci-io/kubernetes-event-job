@@ -4,8 +4,8 @@
   "description": "Node.js application to deploy kubernetes jobs based on AMQP messages",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index",
-    "test": "node_modules/.bin/jasmine --config=spec/support/jasmine.json",
+    "start": "node app/src/index",
+    "test": "node_modules/.bin/jasmine --config=app/spec/support/jasmine.json",
     "coverage": "nyc -r lcov -n \"src/**/*.js\" npm test"
   },
   "repository": {
