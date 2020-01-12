@@ -59,6 +59,8 @@ kind: ConfigMap
 metadata:
   name: event-job-provisioner-configs
 data:
+  # Full config options:
+  # https://github.com/goci-io/kubernetes-event-job#job-config
   test-queue-1: |
     image: 'test'
     imageVersion: '0.1.0'

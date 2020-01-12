@@ -43,7 +43,7 @@ The following environment variables can be set to configure the app behaviour:
 | CONFIG_MAP_NAME | Name of the config map to configure the jobs | event-job-provisioner-configs |
 | RELOAD_ENABLED | Whether to reload job configurations (!= off, no, 0, false) | true |
 
-The following properties can be configured per queue:
+#### Job Config
 
 | Name | Description | Default |
 |----------------|-------------------------------------------------|--------------------|
