@@ -1,0 +1,5 @@
+Deployment successful.
+Application is now consuming messages and creating jobs.
+
+To delete the deployment run: 
+helm del --purge <release-name>

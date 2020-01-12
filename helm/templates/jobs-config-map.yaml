@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default (printf "%s-%s" include "k8s-event-job.fullname" "jobs") Values.configMap.jobsConfigMapName }}
+  namespace: {{ Values.namespace }}
+data:
+{{- range $key, $value := .Values.configMap.jobs }}
+  $key: |
+    {{- toYaml $value | nindent 4 }}
+{{- end }}
