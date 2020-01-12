@@ -37,8 +37,11 @@ class AmqpClient {
       .then(async connection => {
         process.once('SIGINT', () => this.stop());
         this._connection = connection;
+        this._closed = false;
 
-        connection.once('close', reason => {     
+        connection.once('close', reason => {  
+          this._closed = true;
+
           if (isFatalError(reason) || (reason.message && reason.message.indexOf('broker forced connection closure') > -1)) {
             this.stop(reason);
           }
@@ -58,18 +61,17 @@ class AmqpClient {
    */
   stop(withError) {
     if (withError) {
-      this._lastConnectionError = withError;
       logger.error('Connection failure to broker with error', { error: withError });
       process.exit(1);
     } else {
       logger.info('Closing connection to broker gracefully...');
     }
 
-    this._connection.close()
-      .then(() => logger.info('Connection to broker closed successfully'))
-      .catch(e => {
-        logger.warn('Connection to broker may already be closed', { error: e });
-      });
+    if (!this._closed) {
+      this._connection.close()
+        .then(() => logger.info('Connection to broker closed successfully'))
+        .catch(e => logger.warn('Connection to broker may already be closed', { error: e }));
+    }
   }
 
   /**
