@@ -1,5 +1,6 @@
 
 export DOCKER_REGISTRY ?= gocidocker
+export VERSION ?= $(filter-out "refs/tags/",$(GITHUB_REF))
 
 start:
 	cd app && npm start
