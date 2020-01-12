@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index",
     "test": "node_modules/.bin/jasmine --config=spec/support/jasmine.json",
-    "coverage": "nyc -r text -n \"src/**/*.js\" npm test"
+    "coverage": "nyc -r lcov -n \"src/**/*.js\" npm test"
   },
   "repository": {
     "type": "git",
