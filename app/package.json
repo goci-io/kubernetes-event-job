@@ -15,7 +15,8 @@
   "keywords": [
     "kubernetes",
     "job",
-    "amqp"
+    "amqp",
+    "messages"
   ],
   "author": "goci.io",
   "license": "Apache-2.0",
