@@ -41,14 +41,19 @@ class KubernetesClient {
      */
     createMessageJob(config, message) {
         const jobManifest = config.createJobTemplate();
+        const data = JSON.parse(message);
 
-        return new Promise((resolve, reject) => this.createMessageSecret(config.namespace, config.jobName, jobManifest.metadata.name, message)
-            .then(() => this.batchApi.createNamespacedJob(config.namespace, jobManifest).then(() => resolve({ 
-                job: jobManifest.metadata.name, 
-                alias: config.alias, 
-                jobName: config.jobName 
-            })).catch(reject))
-            .catch(reject))
+        return new Promise((resolve, reject) => {
+            this.createMessageSecret(config.namespace, config.jobName, jobManifest.metadata.name, data)
+                .then(() => this.batchApi.createNamespacedJob(config.namespace, jobManifest)
+                    .then(() => resolve({ 
+                        job: jobManifest.metadata.name, 
+                        alias: config.alias, 
+                        jobName: config.jobName 
+                    }))
+                    .catch(reject))
+                .catch(reject);
+        });
     }
 
     /**
@@ -69,17 +74,20 @@ class KubernetesClient {
      * @param {string} namespace namespace to create the secret in
      * @param {string} job alias or name of the related configuration
      * @param {string} name name of the secret
-     * @param {string} message content of the message
+     * @param {{content:string,environment:{{}}}} message
      * @return {Promise}
      */
     createMessageSecret(namespace, job, name, message) {
+        const content = JSON.stringify(message.content, null, 0);
+
         return this.coreApi.createNamespacedSecret(namespace, {
             metadata: { name, namespace },
             data: {
                 ISSUER: this.encodedIssuer,
                 TARGET: Buffer.from(name).toString('base64'),
-                MESSAGE: Buffer.from(message).toString('base64'),
-                CHECKSUM: crypto.createHash('sha1').update(`${namespace}:${job}:${message}`, 'utf8').digest('base64'),
+                MESSAGE: Buffer.from(content).toString('base64'),
+                CHECKSUM: crypto.createHash('sha1').update(`${namespace}:${job}:${content}`, 'utf8').digest('base64'),
+                ...(message.environment || {})
             }
         });
     }

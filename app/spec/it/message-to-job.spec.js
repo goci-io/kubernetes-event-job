@@ -37,15 +37,18 @@ describe('FromMessageToJobIT', () => {
     }, 30000);
 
     afterAll(async () => {
-        await brokerContainer.stop();
+        amqpClient.stop();
         controller.stop();
+    
+        await brokerContainer.stop();
     });
 
     it('should create k8s job from message', done => {
         spyOn(k8sClient.batchApi, 'createNamespacedJob').and.callThrough();
         spyOn(k8sClient.coreApi, 'createNamespacedSecret').and.callThrough();
 
-        const testMessage = '{"test":"abc"}';
+        const messageContent = '{"test":"abc"}';
+        const testMessage = '{"content":{"test":"abc"},"environment":{"ADDTIONAL_ENV":"abc"}}';
         const jobName = 'testName';
         const expectedMetadata = {
             name: jasmine.any(String),
@@ -74,8 +77,9 @@ describe('FromMessageToJobIT', () => {
                 data: {
                     TARGET: jasmine.any(String),
                     ISSUER: k8sClient.encodedIssuer,
-                    MESSAGE: Buffer.from(testMessage).toString('base64'),
-                    CHECKSUM: crypto.createHash('sha1').update('ctx:testName:' + testMessage).digest('base64'),
+                    MESSAGE: Buffer.from(messageContent).toString('base64'),
+                    CHECKSUM: crypto.createHash('sha1').update('ctx:testName:' + messageContent).digest('base64'),
+                    ADDTIONAL_ENV: 'abc',
                 },
             }));
             expect(k8sClient.batchApi.createNamespacedJob).toHaveBeenCalledWith('ctx', {
@@ -122,7 +126,7 @@ describe('FromMessageToJobIT', () => {
         spyOn(k8sClient.batchApi, 'listNamespacedJob').and.throwError('error listing jobs');
         spyOn(k8sClient.batchApi, 'createNamespacedJob').and.callThrough();
         spyOn(k8sClient.coreApi, 'createNamespacedSecret').and.callThrough();
-        const testMessage = '{"test":"abc"}';
+        const testMessage = '{"content":{"test":"abc"}}';
 
         expect(controller.config['test-queue-2'].interval).toBe(1000);
         

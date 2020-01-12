@@ -16,75 +16,60 @@ class AmqpClient {
    * @param {boolean} requeue
    */
   constructor(host, port, username, password, heartbeatInSeconds, requeue) {
-    this.host = this.buildHost(host, port, username, password);
     this.pollingListeners = [];
-    this.connectionBackoff = 10;
-    this.retryFailures = 0;
     this.requeue = requeue;
     this.messageProcessed = new EventEmitter();
     this.heartbeatInSeconds = heartbeatInSeconds || 10;
+    this.host = this.buildHost(host, port, username, password);
   }
 
   /**
+   * @param {boolean|{ca:string[], cert:string,key:string,password:string}} ssl optional falsy does not enable ssl
+   * 
    * @return {Promise<AmqpClient>}
    */
-  init() {
+  init(ssl) {
     logger.debug('Trying to connect to AMQP broker');
+    const sslOpts = ssl ? this.buildSslOptions(ssl.ca, ssl.cert, ssl.key, ssl.passphrase) : {};
+    const protocol = ssl ? 'amqps' : 'amqp';
 
-    return new Promise((resolve, reject) => {
-      amqp.connect(`amqp://${this.host}?heartbeat=${this.heartbeatInSeconds}`).then(connection => {
-        process.once('SIGINT', () => this.stopChannel());
+    return amqp.connect(`${protocol}://${this.host}?heartbeat=${this.heartbeatInSeconds}`, sslOpts)
+      .then(async connection => {
+        process.once('SIGINT', () => this.stop());
         this._connection = connection;
 
-        connection.once('error', err => {
-          this.stopChannel(error);
-
-          logger.warn('Connection error with broker. Attempting reconnect', err);
-          this.reconnect();
-        });
-
-        connection.once('close', reason => {
+        connection.once('close', reason => {     
           if (isFatalError(reason) || (reason.message && reason.message.indexOf('broker forced connection closure') > -1)) {
-            this._connection.emit('error', reason);
+            this.stop(reason);
           }
         });
     
-        connection.createChannel().then(channel => {
-          this.startOnChannel(channel);
-          resolve(this);
-        }).catch(reject);
-      })
-      .catch(reject);
-    });
+        this.channel = await connection.createChannel();
+        return this.channel;
+      });
   }
 
   /**
-   * Resets the client to listen for messages on the provided channel
-   * 
-   * @param {Channel} channel 
-   */
-  startOnChannel(channel) {
-    this.channel = channel;
-    this.retryFailures = 0;
-    this.connectionBackoff = 10;
-    this._lastConnectionError = null;
-  }
-
-  /**
-   * Stops the connection to allow new connections and sets the last error occurred if provided
+   * Stops the connection to allow new connections and sets the last error occurred if provided.
+   * The channel will not be explizitly flushed to allow further operations to be done through the existing channel.
+   * As the connection will be closed we expect message receives and sends to fail and error handling to be in place.
    * 
    * @param {Error|null} withError 
    */
-  stopChannel(withError) {
-    if (this._connection) {
-      this._connection.close();
-      this._connection = null;
-      this.channel = null;
-      
-      if (withError) {
-        this._lastConnectionError = withError;
-      }
+  stop(withError) {
+    if (withError) {
+      this._lastConnectionError = withError;
+      logger.error('Connection failure to broker with error', { error: withError });
+      process.exit(1);
+    } else {
+      logger.info('Closing connection to broker gracefully...');
     }
+
+    this._connection.close()
+      .then(() => logger.info('Connection to broker closed successfully'))
+      .catch(e => {
+        logger.warn('Connection to broker may already be closed', { error: e });
+      });
   }
 
   /**
@@ -109,10 +94,7 @@ class AmqpClient {
           setInterval(() => this.fetchMessages(queue.name, callable, processingState), queue.interval)
         );
       }))
-      .catch(err => {
-        logger.error('Error updating amqp listeners', err);
-        process.exit(1);
-      })
+      .catch(err => this.unableToRecoverDuringRuntime(err));
   }
 
   /**
@@ -129,21 +111,23 @@ class AmqpClient {
 
     processingState(queue).then(state => {
       if (state.busy) {
-        logger.info('Max parallelism reached. Queue busy', { queue });
+        if (logger.isDebugEnabled()) {
+          logger.debug('Max parallelism reached. Queue busy', { queue });
+        }
       } else {
         this.channel.get(queue)
           .then(message => {
             if (message) {
               this.consumeMessage(queue, message, callable, processingState);
-            } else if (logger.isDebugEnabled()) {
-              logger.debug('No new messages in queue', { queue });
+            } else {
+              logger.info('No new messages in queue', { queue });
             }
           })
           .catch(error => logger.error('Could not get message from queue', { queue, error }));
         }
       })
       // processState is expected to always resolve (with local fallback)
-      .catch(err => logger.error('Unhandled error during processing state check', err));
+      .catch(err => logger.error('Unhandled error during processing state check', { error: err }));
   }
 
   /**
@@ -166,27 +150,9 @@ class AmqpClient {
         this.fetchMessages(queue, callable, processingState);
       })
       .catch(err => {
-        logger.error('Error while trying to dispatch message from queue ' + queue, err);
+        logger.error('Error while trying to dispatch message from queue ' + queue, { error: err });
         this.channel.nack(message, false, this.requeue);
         this.messageProcessed.emit(queue, {success: false, error: err, queue});
-      });
-  }
-
-  reconnect() {
-    this.init()
-      .then(() => logger.info('Successfully reconnected to broker'))
-      .catch(err => {
-        this.retryFailures++;
-
-        if (this.retryFailures < 5) {
-          logger.warn('Could not reconnect to broker. Retrying in ' + this.connectionBackoff + ' seconds', err);
-
-          setTimeout(() => this.reconnect(), this.connectionBackoff * 1000);
-          this.connectionBackoff = Math.ceil(this.connectionBackoff * (Math.random() * 2.5));
-        } else {
-          logger.error('Connection error not recovered after retries. Exiting', this._lastConnectionError, err);
-          process.exit(1);
-        }
       });
   }
 
@@ -204,6 +170,26 @@ class AmqpClient {
     } else {
       return `${host}:${port}`;
     }
+  }
+
+  /**
+   * Reads files from /var/ssl/ and creates amqp ssl options
+   * 
+   * @param {string} caChain list of files in /var/ssl/*.pem, divided by ,  
+   * @param {string} certFile cert file name
+   * @param {string} keyFile key file name
+   * @param {string|null} passphrase passphrase for key file
+   */
+  buildSslOptions(caChain, certFile, keyFile, passphrase) {
+    const fs = require('fs');
+    const ca = caChain.split(',').map(ca => fs.readFileSync(`/var/ssl/${ca}.pem`));
+
+    return {
+      ca,
+      passphrase,
+      key: fs.readFileSync(`/var/ssl/${keyFile}.pem`),
+      cert: fs.readFileSync(`/var/ssl/${certFile}.pem`),
+    };
   }
 }
 
