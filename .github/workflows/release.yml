@@ -1,8 +1,7 @@
 name: Release
-on: 
-  push:
-    tags:
-      - '*'
+on:
+  release:
+    types: [published]
 jobs:
   build:
     runs-on: ubuntu-16.04
