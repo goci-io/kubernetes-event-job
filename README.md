@@ -43,6 +43,23 @@ The following environment variables can be set to configure the app behaviour:
 | CONFIG_MAP_NAME | Name of the config map to configure the jobs | event-job-provisioner-configs |
 | RELOAD_ENABLED | Whether to reload job configurations (!= off, no, 0, false) | true |
 
+The following properties can be configured per queue:
+
+| Name | Description | Default |
+|----------------|-------------------------------------------------|--------------------|
+| jobName | Unique name of the job (prefix) | - |
+| parallelism | Number or `unlimited` | 10 |
+| timeout | Number in seconds for the job before timing out | 3600 |
+| environment | Object with addtitional environment variables for the job | `{}` |
+| interval | Interval in seconds to poll for new messages | 60 |
+| serviceAccount | Name of an service account to use for the job | - |
+| namespace | The kubernetes namespace to deploy the job into | `$KUBERNETES_JOB_SCOPE` |
+| resources | Kubernetes Pod resource settings | `{requests: {cpu: '10m', memory: '56Mi'}, limits: {cpu: '25m', memory: '96Mi'}}` | 
+| labels | Key-Value pairs of additional labels for the job | `{}` |
+| image | The docker image name to use | - | 
+| imageVersion | The version of the docker image to use | `latest` |
+| registry | The docker registry to use | `$DOCKER_REGISTRY` |
+
 ### Format
 
 Messages need to be in a speicfic format to support additional environment variables etc.
