@@ -89,8 +89,8 @@ To execute the tests run `make test`.
 
 ### Release
 
-To create a new release create a new Tag on github following this convention: `v<major>.<minor>.<patch>[-rc<num>]`.
-All code merged to the matser will be available using the `latest` release.
+To create a new release create a new Tag on github following this convention: `<major>.<minor>.<patch>[-rc<num>]`.
+All code merged to the matser will be available using the `latest` release. The release is done by our [github action](.github/workflows/release.yml)
 
 ### Todos
 
