@@ -1,6 +1,6 @@
 # kubernetes-event-job
 
-[![Build Status](https://github.com/goci-io/kubernetes-event-job/workflows/Coverage/badge.svg?branch=master)](https://github.com/goci-io/kubernetes-event-job/actions?query=workflow%3A"Coverage") [![Coverage Status](https://coveralls.io/repos/github/goci-io/kubernetes-event-job/badge.svg?branch=master)](https://coveralls.io/github/goci-io/kubernetes-event-job?branch=master)
+[![Build Status](https://github.com/goci-io/kubernetes-event-job/workflows/Test%20and%20Coverage/badge.svg?branch=master)](https://github.com/goci-io/kubernetes-event-job/actions?query=workflow%3A"Test+and+Coverage") [![Coverage Status](https://coveralls.io/repos/github/goci-io/kubernetes-event-job/badge.svg?branch=master)](https://coveralls.io/github/goci-io/kubernetes-event-job?branch=master)
 
 **Maintained by [@goci-io/prp-node-apps](https://github.com/orgs/goci-io/teams/prp-node-apps)**
 
