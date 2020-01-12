@@ -1,5 +1,7 @@
 # kubernetes-event-jobs
 
+[![Coverage Status](https://coveralls.io/repos/github/goci-io/kubernetes-event-job/badge.svg?branch=master)](https://coveralls.io/github/goci-io/kubernetes-event-job?branch=master)
+
 **Maintained by [@goci-io/prp-apps](https://github.com/orgs/goci-io/teams/prp-apps)**
 
 _This project is in alpha stage._
