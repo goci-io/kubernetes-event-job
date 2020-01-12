@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node app/src/index",
-    "test": "node_modules/.bin/jasmine --config=app/spec/support/jasmine.json",
+    "test": "node_modules/.bin/jasmine --config=jasmine.json",
     "coverage": "nyc -r lcov -n \"app/src/**/*.js\" npm test"
   },
   "repository": {
