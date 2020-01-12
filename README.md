@@ -72,7 +72,7 @@ When recieving a message a new Job will be deployed sourcing a secret with the f
 
 ### Deployment
 
-You can view the exmample deployment file [here](https://github.com/goci-io/k8s-event-jobs/tree/master/Deployment.yaml). 
+You can view the exmample deployment file [here](https://github.com/goci-io/k8s-event-jobs/blob/master/Deployment.yaml). 
 This example assumes you have RabbitMQ installed on your cluster and use `rabbitmq.default.svc.cluster.local` with credentials `test:test` on port 5672.
 
 You can also use the [helm chart](https://github.com/goci-io/k8s-event-jobs/tree/master/helm)
