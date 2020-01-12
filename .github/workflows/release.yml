@@ -1,0 +1,22 @@
+name: Release
+on: 
+  push:
+    tags:
+      - '*'
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build docker image
+        run: make build
+      - name: Push to docker hub
+      - name: Release
+        run: make release
+        uses: actions/docker/login@master
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          VERSION: ${{ github.ref }}
