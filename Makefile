@@ -1,5 +1,5 @@
 
-export DOCKER_REGISTRY ?= localhost:5000
+export DOCKER_REGISTRY ?= gocidocker
 
 start:
 	cd app && npm start
