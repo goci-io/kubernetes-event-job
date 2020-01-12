@@ -13,9 +13,9 @@ jobs:
       - name: Build docker image
         run: make build
       - name: Docker login
-        uses: actions/docker/login@master
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Release
         run: make release VERSION=${{ github.ref }}
