@@ -13,7 +13,7 @@ to create a new terraform setup once a new customer signed up and provision requ
 This application uses a polling mechanism to get messages from a queue to avoid overloading kubernetes with jobs.
 The max count of jobs running in parallel can be specified for each job/queue and can also be set to `unlimited` (not suggested). 
 
-[Latest Tags](https://hub.docker.com/r/gocidocker/k8s-event-jobs/tags)
+[Latest Tags](https://hub.docker.com/r/gocidocker/kubernetes-event-job/tags)
 
 #### When this setup fits
 - Longer processing times  
