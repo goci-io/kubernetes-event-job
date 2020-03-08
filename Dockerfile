@@ -1,4 +1,4 @@
-FROM node:12.13-alpine
+FROM node:12.16-alpine3.11
 
 COPY app/src /opt/app/
 COPY package*.json /opt/app/
